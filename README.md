@@ -1,6 +1,8 @@
 # Learn Russian
 
 Grammar-first Russian course (target: A2) as an MkDocs site, with a built-in spaced-repetition flashcard app.
+
+## Github Pages Link: 
 https://kt-kenny.github.io/Learn-Russian/index.html
 
 ## Publish to GitHub Pages
