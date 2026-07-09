@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Flashcards — Learn Russian</title>
+<style>
+  :root{
+    --bg:#f5f5f7;
+    --surface:#ffffff;
+    --surface-2:#eef0f3;
+    --text:#1a1a1e;
+    --text-dim:#6b6b74;
+    --border:#dcdce2;
+    --accent:#5b47e0;
+    --accent-2:#7a68ea;
+    --accent-contrast:#ffffff;
+    --good:#2e9e5b;
+    --hard:#d69a1f;
+    --again:#d64545;
+    --easy:#2f7fd6;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 30px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+    --radius: 16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#131318;
+      --surface:#1c1c24;
+      --surface-2:#26262f;
+      --text:#eeeef2;
+      --text-dim:#9a9aa5;
+      --border:#34343f;
+      --accent:#8b7bf0;
+      --accent-2:#a397f5;
+      --accent-contrast:#0f0f14;
+      --good:#4cbb7a;
+      --hard:#e0af3d;
+      --again:#e0625d;
+      --easy:#5a9de0;
+      --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+    }
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.45;
+    min-height:100vh;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:16px 16px 60px;
+  }
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  .backlink{
+    display:inline-block;
+    font-size:0.9em;
+    color:var(--text-dim);
+    margin-bottom:10px;
+  }
+
+  header.topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:18px;
+  }
+  header.topbar h1{
+    font-size:1.4em;
+    margin:0;
+    font-weight:700;
+  }
+  .icon-btn{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    width:44px;
+    height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-size:1.2em;
+    color:var(--text);
+    box-shadow:var(--shadow);
+    flex-shrink:0;
+  }
+  .icon-btn:hover{background:var(--surface-2);}
+
+  /* ---------- Stats bar ---------- */
+  .stats-bar{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-bottom:20px;
+  }
+  .stat-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:12px 10px;
+    text-align:center;
+    box-shadow:var(--shadow);
+  }
+  .stat-card .num{
+    font-size:1.5em;
+    font-weight:700;
+    color:var(--accent);
+    display:block;
+  }
+  .stat-card .label{
+    font-size:0.72em;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+  }
+
+  /* ---------- Category / deck list ---------- */
+  .category-title{
+    font-size:0.85em;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--text-dim);
+    margin:22px 0 10px;
+    font-weight:600;
+  }
+  .deck-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:12px;
+    box-shadow:var(--shadow);
+    cursor:pointer;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .deck-card:hover{
+    box-shadow:var(--shadow-lg);
+    transform:translateY(-1px);
+  }
+  .deck-card:active{transform:translateY(0);}
+  .deck-card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+  }
+  .deck-name{
+    font-weight:700;
+    font-size:1.08em;
+  }
+  .deck-desc{
+    color:var(--text-dim);
+    font-size:0.88em;
+    margin-top:3px;
+  }
+  .deck-badges{
+    display:flex;
+    gap:6px;
+    flex-shrink:0;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .badge{
+    font-size:0.72em;
+    font-weight:600;
+    padding:3px 8px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .badge.due{ background:rgba(214,69,69,0.15); color:var(--again); }
+  .badge.new{ background:rgba(47,127,214,0.15); color:var(--easy); }
+  .badge.count{ background:var(--surface-2); color:var(--text-dim); }
+
+  .mastery-bar-track{
+    margin-top:12px;
+    height:6px;
+    border-radius:99px;
+    background:var(--surface-2);
+    overflow:hidden;
+  }
+  .mastery-bar-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius:99px;
+    transition:width 0.3s ease;
+  }
+  .deck-card-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:6px;
+  }
+  .mastery-label{
+    font-size:0.7em;
+    color:var(--text-dim);
+    margin-top:4px;
+  }
+
+  .deck-actions{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .btn{
+    border:none;
+    border-radius:10px;
+    padding:10px 14px;
+    font-size:0.9em;
+    font-weight:600;
+    cursor:pointer;
+    flex:1;
+    min-height:44px;
+  }
+  .btn-primary{ background:var(--accent); color:var(--accent-contrast); }
+  .btn-secondary{ background:var(--surface-2); color:var(--text); }
+  .btn-ghost{ background:transparent; color:var(--text-dim); border:1px solid var(--border); }
+  .btn:active{ filter:brightness(0.92); }
+
+  /* ---------- Deck detail / mode picker ---------- */
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px;
+    box-shadow:var(--shadow);
+    margin-bottom:16px;
+  }
+  .mode-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:14px;
+  }
+  .mode-btn{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:18px 10px;
+    text-align:center;
+    cursor:pointer;
+    min-height:80px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+  }
+  .mode-btn:hover{ border-color:var(--accent); }
+  .mode-btn .big{ font-size:1.3em; font-weight:700; }
+  .mode-btn .small{ font-size:0.75em; color:var(--text-dim); }
+
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 4px;
+    border-top:1px solid var(--border);
+    margin-top:14px;
+  }
+  .switch{
+    position:relative;
+    width:46px;
+    height:26px;
+    flex-shrink:0;
+  }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider{
+    position:absolute; inset:0;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:99px;
+    cursor:pointer;
+    transition:0.2s;
+  }
+  .slider::before{
+    content:"";
+    position:absolute;
+    height:18px; width:18px;
+    left:3px; top:2px;
+    background:var(--surface);
+    box-shadow:var(--shadow);
+    border-radius:50%;
+    transition:0.2s;
+  }
+  .switch input:checked + .slider{ background:var(--accent); }
+  .switch input:checked + .slider::before{ transform:translateX(20px); background:#fff; }
+
+  /* ---------- Study screen ---------- */
+  .study-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+    gap:10px;
+  }
+  .progress-track{
+    flex:1;
+    height:6px;
+    background:var(--surface-2);
+    border-radius:99px;
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--accent);
+    transition:width 0.25s ease;
+  }
+  .progress-text{
+    font-size:0.8em;
+    color:var(--text-dim);
+    white-space:nowrap;
+  }
+
+  .card-stage{
+    perspective:1200px;
+    margin:20px 0;
+  }
+  .flashcard{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:20px;
+    box-shadow:var(--shadow-lg);
+    min-height:280px;
+    padding:28px 22px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    cursor:pointer;
+    animation:fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn{
+    from{ opacity:0; transform:translateY(6px) scale(0.99); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
+  .card-eyebrow{
+    font-size:0.72em;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--text-dim);
+    margin-bottom:14px;
+  }
+  .card-front-text{
+    font-size:1.6em;
+    font-weight:700;
+    line-height:1.35;
+  }
+  .card-hint{
+    margin-top:20px;
+    font-size:0.82em;
+    color:var(--text-dim);
+  }
+
+  .answer-block{
+    width:100%;
+    margin-top:18px;
+    padding-top:18px;
+    border-top:1px dashed var(--border);
+    animation:fadeIn 0.2s ease;
+  }
+  .answer-main{
+    font-size:1.25em;
+    font-weight:700;
+    margin-bottom:8px;
+  }
+  .answer-main.ru{ font-size:1.5em; }
+  .literal-block{
+    font-style:italic;
+    color:var(--text-dim);
+    font-size:0.92em;
+    margin-bottom:10px;
+  }
+  .literal-block .lit-label{
+    font-style:normal;
+    font-weight:700;
+    text-transform:uppercase;
+    font-size:0.75em;
+    letter-spacing:0.04em;
+    color:var(--accent);
+    margin-right:6px;
+  }
+  .notes-block{
+    background:var(--surface-2);
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:0.85em;
+    color:var(--text-dim);
+    text-align:left;
+    margin-top:8px;
+  }
+  .notes-block .notes-label{
+    font-weight:700;
+    color:var(--text);
+    display:block;
+    margin-bottom:2px;
+    font-size:0.85em;
+  }
+
+  .grade-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-top:18px;
+  }
+  .grade-btn{
+    border:none;
+    border-radius:12px;
+    padding:14px 4px;
+    min-height:60px;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+  }
+  .grade-btn .k{ font-size:0.68em; opacity:0.85; font-weight:500;}
+  .grade-btn.again{ background:var(--again); }
+  .grade-btn.hard{ background:var(--hard); }
+  .grade-btn.good{ background:var(--good); }
+  .grade-btn.easy{ background:var(--easy); }
+  .grade-btn:active{ filter:brightness(0.9); }
+
+  .reveal-btn{
+    width:100%;
+    margin-top:18px;
+    background:var(--accent);
+    color:var(--accent-contrast);
+    border:none;
+    border-radius:12px;
+    padding:16px;
+    font-size:1em;
+    font-weight:700;
+    cursor:pointer;
+    min-height:52px;
+  }
+  .reveal-btn:active{ filter:brightness(0.92); }
+
+  /* ---------- Done screen ---------- */
+  .done-screen{
+    text-align:center;
+    padding:40px 16px;
+  }
+  .done-screen .emoji{ font-size:3em; margin-bottom:10px; }
+  .done-stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin:20px 0;
+  }
+
+  /* ---------- Settings modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.5);
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:100;
+  }
+  @media (min-width:640px){
+    .modal-overlay{ align-items:center; }
+  }
+  .modal{
+    background:var(--surface);
+    border-radius:20px 20px 0 0;
+    width:100%;
+    max-width:640px;
+    max-height:85vh;
+    overflow-y:auto;
+    padding:20px;
+    box-shadow:var(--shadow-lg);
+  }
+  @media (min-width:640px){
+    .modal{ border-radius:20px; }
+  }
+  .modal h2{ margin-top:0; }
+  .modal-close{
+    float:right;
+    background:var(--surface-2);
+    border:none;
+    border-radius:10px;
+    width:36px; height:36px;
+    font-size:1em;
+    cursor:pointer;
+    color:var(--text);
+  }
+  .settings-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid var(--border);
+    gap:12px;
+  }
+  .settings-row:last-child{ border-bottom:none; }
+  .settings-label{ font-weight:600; font-size:0.95em; }
+  .settings-sub{ font-size:0.78em; color:var(--text-dim); margin-top:2px; }
+  input[type=number]{
+    width:64px;
+    padding:8px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--bg);
+    color:var(--text);
+    font-size:1em;
+    text-align:center;
+  }
+  .deck-reset-list{ margin-top:6px; }
+  .deck-reset-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 0;
+    font-size:0.88em;
+  }
+  .btn-danger{
+    background:rgba(214,69,69,0.12);
+    color:var(--again);
+    border:none;
+    border-radius:8px;
+    padding:6px 12px;
+    font-size:0.82em;
+    font-weight:600;
+    cursor:pointer;
+  }
+
+  .empty-state{
+    text-align:center;
+    color:var(--text-dim);
+    padding:30px 10px;
+  }
+
+  .hidden{ display:none !important; }
+
+  footer.app-footer{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:0.78em;
+    margin-top:30px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="backlink" href="../index.html">&larr; Back to docs</a>
+
+  <header class="topbar">
+    <h1 id="header-title">Flashcards</h1>
+    <button class="icon-btn" id="settings-btn" title="Settings" aria-label="Settings">⚙️</button>
+  </header>
+
+  <!-- ============ HOME SCREEN ============ -->
+  <div id="screen-home">
+    <div class="stats-bar">
+      <div class="stat-card">
+        <span class="num" id="stat-reviews">0</span>
+        <span class="label">Reviews</span>
+      </div>
+      <div class="stat-card">
+        <span class="num" id="stat-seen">0</span>
+        <span class="label">Cards Seen</span>
+      </div>
+      <div class="stat-card">
+        <span class="num" id="stat-due">0</span>
+        <span class="label">Due Today</span>
+      </div>
+    </div>
+
+    <div id="deck-list-container"></div>
+  </div>
+
+  <!-- ============ DECK DETAIL / MODE PICKER ============ -->
+  <div id="screen-deck" class="hidden">
+    <button class="btn-ghost" id="deck-back-btn" style="margin-bottom:14px;">&larr; All decks</button>
+    <div class="panel">
+      <div class="deck-name" id="deck-detail-name" style="font-size:1.3em;"></div>
+      <div class="deck-desc" id="deck-detail-desc"></div>
+      <div class="deck-badges" id="deck-detail-badges" style="margin-top:10px;"></div>
+
+      <div class="mode-grid">
+        <div class="mode-btn" id="mode-ru-en">
+          <div class="big">RU → EN</div>
+          <div class="small">Recognition</div>
+        </div>
+        <div class="mode-btn" id="mode-en-ru">
+          <div class="big">EN → RU</div>
+          <div class="small">Production</div>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <div>
+          <div class="settings-label">Cram mode</div>
+          <div class="settings-sub">Ignore scheduling, shuffle whole deck</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="cram-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ STUDY SCREEN ============ -->
+  <div id="screen-study" class="hidden">
+    <div class="study-header">
+      <button class="icon-btn" id="study-back-btn" title="Back" aria-label="Back">✕</button>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="progress-text" id="progress-text">0/0</div>
+    </div>
+
+    <div class="card-stage">
+      <div class="flashcard" id="flashcard">
+        <div class="card-eyebrow" id="card-eyebrow">RU → EN</div>
+        <div class="card-front-text" id="card-front-text"></div>
+        <div class="card-hint" id="card-hint">Tap card or press space to reveal</div>
+
+        <div class="answer-block hidden" id="answer-block">
+          <div class="answer-main" id="answer-main"></div>
+          <div class="literal-block" id="literal-block"></div>
+          <div class="notes-block hidden" id="notes-block">
+            <span class="notes-label">Note</span>
+            <span id="notes-text"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="reveal-btn" id="reveal-btn">Show Answer (space)</button>
+
+    <div class="grade-row hidden" id="grade-row">
+      <button class="grade-btn again" data-grade="again">Again<span class="k">1</span></button>
+      <button class="grade-btn hard" data-grade="hard">Hard<span class="k">2</span></button>
+      <button class="grade-btn good" data-grade="good">Good<span class="k">3</span></button>
+      <button class="grade-btn easy" data-grade="easy">Easy<span class="k">4</span></button>
+    </div>
+  </div>
+
+  <!-- ============ DONE SCREEN ============ -->
+  <div id="screen-done" class="hidden">
+    <div class="done-screen">
+      <div class="emoji">✅</div>
+      <h2>Session complete!</h2>
+      <div class="done-stats">
+        <div class="stat-card">
+          <span class="num" id="done-reviewed">0</span>
+          <span class="label">Reviewed</span>
+        </div>
+        <div class="stat-card">
+          <span class="num" id="done-again">0</span>
+          <span class="label">Again</span>
+        </div>
+        <div class="stat-card">
+          <span class="num" id="done-easy">0</span>
+          <span class="label">Easy</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="done-back-btn" style="max-width:280px;">Back to decks</button>
+    </div>
+  </div>
+
+  <footer class="app-footer">Learn Russian &middot; spaced-repetition flashcards &middot; data stays in your browser (localStorage)</footer>
+</div>
+
+<!-- ============ SETTINGS MODAL ============ -->
+<div class="modal-overlay hidden" id="settings-modal">
+  <div class="modal">
+    <button class="modal-close" id="settings-close">✕</button>
+    <h2>Settings</h2>
+
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">New cards per session</div>
+        <div class="settings-sub">How many brand-new cards to introduce each study session</div>
+      </div>
+      <input type="number" id="new-per-session" min="1" max="50" value="15">
+    </div>
+
+    <div class="settings-row" style="flex-direction:column; align-items:stretch;">
+      <div class="settings-label">Reset progress per deck</div>
+      <div class="settings-sub">Clears scheduling data for both modes of a deck. Cannot be undone.</div>
+      <div class="deck-reset-list" id="deck-reset-list"></div>
+    </div>
+  </div>
+</div>
+
+<script src="decks.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  // ======================================================================
+  // Guard: DECKS must be loaded from decks.js
+  // ======================================================================
+  if (typeof DECKS === "undefined" || !Array.isArray(DECKS)) {
+    document.getElementById("deck-list-container").innerHTML =
+      '<div class="empty-state">Could not load decks.js — make sure it is in the same folder as index.html.</div>';
+    return;
+  }
+
+  // ======================================================================
+  // Storage helpers
+  // ======================================================================
+  var META_KEY = "ruflash:v1:meta";
+  var SETTINGS_KEY = "ruflash:v1:settings";
+
+  function todayISO(){
+    var d = new Date();
+    d.setHours(0,0,0,0);
+    return d.toISOString().slice(0,10);
+  }
+  function addDaysISO(days){
+    var d = new Date();
+    d.setHours(0,0,0,0);
+    d.setDate(d.getDate() + Math.round(days));
+    return d.toISOString().slice(0,10);
+  }
+
+  function loadJSON(key, fallback){
+    try{
+      var raw = localStorage.getItem(key);
+      if(!raw) return fallback;
+      var parsed = JSON.parse(raw);
+      return parsed === null || parsed === undefined ? fallback : parsed;
+    }catch(e){
+      return fallback;
+    }
+  }
+  function saveJSON(key, val){
+    try{
+      localStorage.setItem(key, JSON.stringify(val));
+    }catch(e){ /* storage full or unavailable — fail silently */ }
+  }
+
+  function deckStateKey(deckId, mode){
+    return "ruflash:v1:" + deckId + ":" + mode;
+  }
+
+  // Per-card state: { reps, interval, ease, due }
+  // Stored per deck+mode as an object keyed by card index (stable since decks.js order is fixed).
+  function loadDeckState(deckId, mode){
+    return loadJSON(deckStateKey(deckId, mode), {});
+  }
+  function saveDeckState(deckId, mode, state){
+    saveJSON(deckStateKey(deckId, mode), state);
+  }
+
+  // Global meta: total reviews, cards seen (unique card+mode keys ever reviewed)
+  function loadMeta(){
+    return loadJSON(META_KEY, { totalReviews: 0, seenKeys: {} });
+  }
+  function saveMeta(meta){
+    saveJSON(META_KEY, meta);
+  }
+
+  function loadSettings(){
+    var s = loadJSON(SETTINGS_KEY, { newPerSession: 15 });
+    if (!s.newPerSession || s.newPerSession < 1) s.newPerSession = 15;
+    return s;
+  }
+  function saveSettings(s){
+    saveJSON(SETTINGS_KEY, s);
+  }
+
+  var settings = loadSettings();
+  var meta = loadMeta();
+
+  // ======================================================================
+  // SM-2 (simplified) scheduler
+  // ======================================================================
+  // card state fields: reps (int), interval (float days), ease (float, >=1.3), due (ISO date string)
+  function newCardState(){
+    return { reps: 0, interval: 0, ease: 2.5, due: todayISO() };
+  }
+
+  // grade: "again" | "hard" | "good" | "easy"
+  // Returns a NEW state object. Does not mutate input.
+  function schedule(state, grade){
+    var s = { reps: state.reps, interval: state.interval, ease: state.ease, due: state.due };
+
+    if (grade === "again"){
+      // Lapse: reset repetitions, shrink ease, short relearn interval.
+      s.reps = 0;
+      s.ease = Math.max(1.3, s.ease - 0.2);
+      s.interval = 0; // handled specially: re-queued within session, due today
+      s.due = todayISO();
+      return s;
+    }
+
+    // Ease adjustments per grade (SM-2-ish)
+    if (grade === "hard"){
+      s.ease = Math.max(1.3, s.ease - 0.15);
+    } else if (grade === "good"){
+      // ease unchanged
+    } else if (grade === "easy"){
+      s.ease = s.ease + 0.15;
+    }
+
+    if (s.reps === 0){
+      // First successful review
+      if (grade === "hard") s.interval = 1;
+      else if (grade === "easy") s.interval = 4;
+      else s.interval = 1; // good
+    } else if (s.reps === 1){
+      if (grade === "hard") s.interval = 3;
+      else if (grade === "easy") s.interval = 7;
+      else s.interval = 6; // good
+    } else {
+      var mult = s.ease;
+      if (grade === "hard") mult = 1.2;
+      else if (grade === "easy") mult = s.ease * 1.3;
+      s.interval = Math.max(1, Math.round(s.interval * mult));
+    }
+
+    s.reps = s.reps + 1;
+    s.due = addDaysISO(s.interval);
+    return s;
+  }
+
+  // ======================================================================
+  // Deck stats (due/new/mastery) for home screen
+  // ======================================================================
+  function computeDeckStats(deck){
+    var modes = ["ru-en", "en-ru"];
+    var totalCards = deck.cards.length;
+    var dueCount = 0;
+    var newCount = 0;
+    var masterySum = 0;
+    var masteryDenom = 0;
+    var today = todayISO();
+
+    modes.forEach(function(mode){
+      var state = loadDeckState(deck.id, mode);
+      for (var i = 0; i < totalCards; i++){
+        var cs = state[i];
+        masteryDenom++;
+        if (!cs){
+          newCount++;
+        } else {
+          if (cs.due <= today) dueCount++;
+          // mastery contribution: scale reps/ease into 0..1, capped
+          var m = Math.min(1, cs.reps / 5) * Math.min(1, cs.ease / 2.8);
+          masterySum += m;
+        }
+      }
+    });
+
+    var mastery = masteryDenom > 0 ? Math.round((masterySum / masteryDenom) * 100) : 0;
+    return { dueCount: dueCount, newCount: newCount, mastery: mastery, totalCards: totalCards };
+  }
+
+  function computeGlobalStats(){
+    var dueTotal = 0;
+    var seenTotal = Object.keys(meta.seenKeys || {}).length;
+    var today = todayISO();
+    DECKS.forEach(function(deck){
+      ["ru-en","en-ru"].forEach(function(mode){
+        var state = loadDeckState(deck.id, mode);
+        Object.keys(state).forEach(function(idx){
+          if (state[idx].due <= today) dueTotal++;
+        });
+      });
+    });
+    return { totalReviews: meta.totalReviews || 0, seenTotal: seenTotal, dueTotal: dueTotal };
+  }
+
+  // ======================================================================
+  // App state / navigation
+  // ======================================================================
+  var app = {
+    screen: "home",       // home | deck | study | done
+    currentDeck: null,
+    currentMode: null,    // "ru-en" | "en-ru"
+    cram: false,
+    queue: [],             // array of {cardIndex, isNew}
+    queuePos: 0,
+    revealed: false,
+    sessionStats: { reviewed: 0, again: 0, easy: 0 },
+    lastGradeTime: 0
+  };
+
+  var screens = {
+    home: document.getElementById("screen-home"),
+    deck: document.getElementById("screen-deck"),
+    study: document.getElementById("screen-study"),
+    done: document.getElementById("screen-done")
+  };
+  var headerTitle = document.getElementById("header-title");
+
+  function showScreen(name){
+    Object.keys(screens).forEach(function(k){
+      screens[k].classList.toggle("hidden", k !== name);
+    });
+    app.screen = name;
+    if (name === "home") headerTitle.textContent = "Flashcards";
+    if (name === "deck") headerTitle.textContent = app.currentDeck ? app.currentDeck.name : "Deck";
+    if (name === "study") headerTitle.textContent = app.currentDeck ? app.currentDeck.name : "Study";
+    if (name === "done") headerTitle.textContent = "Done";
+  }
+
+  // ======================================================================
+  // Home screen rendering
+  // ======================================================================
+  var CATEGORY_LABELS = { phrases: "Phrases", grammar: "Grammar" };
+
+  function renderHome(){
+    meta = loadMeta();
+    var g = computeGlobalStats();
+    document.getElementById("stat-reviews").textContent = g.totalReviews;
+    document.getElementById("stat-seen").textContent = g.seenTotal;
+    document.getElementById("stat-due").textContent = g.dueTotal;
+
+    var container = document.getElementById("deck-list-container");
+    container.innerHTML = "";
+
+    var categories = ["phrases", "grammar"];
+    categories.forEach(function(cat){
+      var decksInCat = DECKS.filter(function(d){ return d.category === cat; });
+      if (decksInCat.length === 0) return;
+
+      var title = document.createElement("div");
+      title.className = "category-title";
+      title.textContent = CATEGORY_LABELS[cat] || cat;
+      container.appendChild(title);
+
+      decksInCat.forEach(function(deck){
+        var stats = computeDeckStats(deck);
+        var card = document.createElement("div");
+        card.className = "deck-card";
+        card.setAttribute("data-deck-id", deck.id);
+
+        var badgesHTML = '<span class="badge count">' + stats.totalCards + ' cards</span>';
+        if (stats.dueCount > 0) badgesHTML += '<span class="badge due">' + stats.dueCount + ' due</span>';
+        if (stats.newCount > 0) badgesHTML += '<span class="badge new">' + stats.newCount + ' new</span>';
+
+        card.innerHTML =
+          '<div class="deck-card-top">' +
+            '<div>' +
+              '<div class="deck-name">' + escapeHTML(deck.name) + '</div>' +
+              '<div class="deck-desc">' + escapeHTML(deck.description) + '</div>' +
+            '</div>' +
+            '<div class="deck-badges">' + badgesHTML + '</div>' +
+          '</div>' +
+          '<div class="mastery-bar-track"><div class="mastery-bar-fill" style="width:' + stats.mastery + '%"></div></div>' +
+          '<div class="mastery-label">' + stats.mastery + '% mastered</div>';
+
+        card.addEventListener("click", function(){
+          openDeckDetail(deck.id);
+        });
+        container.appendChild(card);
+      });
+    });
+
+    if (DECKS.length === 0){
+      container.innerHTML = '<div class="empty-state">No decks found in decks.js</div>';
+    }
+  }
+
+  function escapeHTML(str){
+    var div = document.createElement("div");
+    div.textContent = String(str == null ? "" : str);
+    return div.innerHTML;
+  }
+
+  // ======================================================================
+  // Deck detail screen
+  // ======================================================================
+  function openDeckDetail(deckId){
+    var deck = DECKS.filter(function(d){ return d.id === deckId; })[0];
+    if (!deck) return;
+    app.currentDeck = deck;
+    app.cram = false;
+    document.getElementById("cram-toggle").checked = false;
+
+    document.getElementById("deck-detail-name").textContent = deck.name;
+    document.getElementById("deck-detail-desc").textContent = deck.description;
+
+    var stats = computeDeckStats(deck);
+    var badgesEl = document.getElementById("deck-detail-badges");
+    var html = '<span class="badge count">' + stats.totalCards + ' cards</span>';
+    if (stats.dueCount > 0) html += '<span class="badge due">' + stats.dueCount + ' due</span>';
+    if (stats.newCount > 0) html += '<span class="badge new">' + stats.newCount + ' new</span>';
+    badgesEl.innerHTML = html;
+
+    showScreen("deck");
+  }
+
+  document.getElementById("deck-back-btn").addEventListener("click", function(){
+    renderHome();
+    showScreen("home");
+  });
+
+  document.getElementById("cram-toggle").addEventListener("change", function(e){
+    app.cram = e.target.checked;
+  });
+
+  document.getElementById("mode-ru-en").addEventListener("click", function(){
+    startStudySession("ru-en");
+  });
+  document.getElementById("mode-en-ru").addEventListener("click", function(){
+    startStudySession("en-ru");
+  });
+
+  // ======================================================================
+  // Study session construction
+  // ======================================================================
+  function buildQueue(deck, mode, cram){
+    var indices = deck.cards.map(function(_, i){ return i; });
+
+    if (cram){
+      shuffleArray(indices);
+      return indices.map(function(i){ return { cardIndex: i, isNew: false }; });
+    }
+
+    var state = loadDeckState(deck.id, mode);
+    var today = todayISO();
+    var due = [];
+    var fresh = [];
+
+    indices.forEach(function(i){
+      var cs = state[i];
+      if (!cs){
+        fresh.push(i);
+      } else if (cs.due <= today){
+        due.push(i);
+      }
+    });
+
+    shuffleArray(due);
+    shuffleArray(fresh);
+    var newLimit = settings.newPerSession;
+    var newSlice = fresh.slice(0, newLimit);
+
+    var combined = due.map(function(i){ return { cardIndex: i, isNew: false }; })
+      .concat(newSlice.map(function(i){ return { cardIndex: i, isNew: true }; }));
+
+    shuffleArray(combined);
+    return combined;
+  }
+
+  function shuffleArray(arr){
+    for (var i = arr.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  function startStudySession(mode){
+    var deck = app.currentDeck;
+    if (!deck) return;
+    app.currentMode = mode;
+    var queue = buildQueue(deck, mode, app.cram);
+
+    if (queue.length === 0){
+      // Nothing due/new — show done screen immediately with zero stats.
+      app.sessionStats = { reviewed: 0, again: 0, easy: 0 };
+      renderDoneScreen();
+      showScreen("done");
+      return;
+    }
+
+    app.queue = queue;
+    app.queuePos = 0;
+    app.sessionInitialLength = queue.length;
+    app.sessionStats = { reviewed: 0, again: 0, easy: 0 };
+    app.revealed = false;
+
+    showScreen("study");
+    renderCurrentCard();
+  }
+
+  document.getElementById("study-back-btn").addEventListener("click", function(){
+    renderHome();
+    showScreen("home");
+  });
+
+  // ======================================================================
+  // Study screen rendering
+  // ======================================================================
+  var elFlashcard = document.getElementById("flashcard");
+  var elEyebrow = document.getElementById("card-eyebrow");
+  var elFrontText = document.getElementById("card-front-text");
+  var elHint = document.getElementById("card-hint");
+  var elAnswerBlock = document.getElementById("answer-block");
+  var elAnswerMain = document.getElementById("answer-main");
+  var elLiteralBlock = document.getElementById("literal-block");
+  var elNotesBlock = document.getElementById("notes-block");
+  var elNotesText = document.getElementById("notes-text");
+  var elRevealBtn = document.getElementById("reveal-btn");
+  var elGradeRow = document.getElementById("grade-row");
+  var elProgressFill = document.getElementById("progress-fill");
+  var elProgressText = document.getElementById("progress-text");
+
+  function currentQueueItem(){
+    return app.queue[app.queuePos];
+  }
+  function currentCard(){
+    var item = currentQueueItem();
+    if (!item) return null;
+    return app.currentDeck.cards[item.cardIndex];
+  }
+
+  function renderCurrentCard(){
+    var item = currentQueueItem();
+    if (!item){
+      renderDoneScreen();
+      showScreen("done");
+      return;
+    }
+    var card = currentCard();
+    app.revealed = false;
+
+    var doneCount = app.sessionInitialLength - app.queue.length + (app.sessionInitialLength - app.queue.length === 0 ? 0 : 0);
+    var reviewedSoFar = app.sessionStats.reviewed;
+    var remaining = app.queue.length - app.queuePos;
+    elProgressText.textContent = reviewedSoFar + " done · " + remaining + " left";
+    var pct = app.sessionInitialLength > 0 ? Math.round((reviewedSoFar / (reviewedSoFar + remaining)) * 100) : 0;
+    elProgressFill.style.width = pct + "%";
+
+    if (app.currentMode === "ru-en"){
+      elEyebrow.textContent = "RU → EN" + (item.isNew ? " · new" : "");
+      elFrontText.textContent = card.front;
+      elFrontText.lang = "ru";
+    } else {
+      elEyebrow.textContent = "EN → RU" + (item.isNew ? " · new" : "");
+      elFrontText.textContent = card.back;
+      elFrontText.lang = "en";
+    }
+
+    elHint.classList.remove("hidden");
+    elAnswerBlock.classList.add("hidden");
+    elRevealBtn.classList.remove("hidden");
+    elGradeRow.classList.add("hidden");
+
+    // Retrigger fade animation
+    elFlashcard.style.animation = "none";
+    void elFlashcard.offsetWidth;
+    elFlashcard.style.animation = "";
+  }
+
+  function revealAnswer(){
+    if (app.revealed) return;
+    app.revealed = true;
+    var card = currentCard();
+    if (!card) return;
+
+    if (app.currentMode === "ru-en"){
+      elAnswerMain.textContent = card.back;
+      elAnswerMain.className = "answer-main";
+    } else {
+      elAnswerMain.textContent = card.front;
+      elAnswerMain.className = "answer-main ru";
+      elAnswerMain.lang = "ru";
+    }
+
+    if (card.literal){
+      elLiteralBlock.innerHTML = '<span class="lit-label">lit.</span>' + escapeHTML(card.literal);
+      elLiteralBlock.classList.remove("hidden");
+    } else {
+      elLiteralBlock.innerHTML = "";
+      elLiteralBlock.classList.add("hidden");
+    }
+
+    if (card.notes){
+      elNotesText.textContent = card.notes;
+      elNotesBlock.classList.remove("hidden");
+    } else {
+      elNotesBlock.classList.add("hidden");
+    }
+
+    elAnswerBlock.classList.remove("hidden");
+    elHint.classList.add("hidden");
+    elRevealBtn.classList.add("hidden");
+    elGradeRow.classList.remove("hidden");
+  }
+
+  elFlashcard.addEventListener("click", function(){
+    if (!app.revealed) revealAnswer();
+  });
+  elRevealBtn.addEventListener("click", revealAnswer);
+
+  // ======================================================================
+  // Grading
+  // ======================================================================
+  function gradeCard(grade){
+    if (app.screen !== "study" || !app.revealed) return;
+    var item = currentQueueItem();
+    if (!item) return;
+    var deck = app.currentDeck;
+    var mode = app.currentMode;
+
+    app.sessionStats.reviewed++;
+    if (grade === "again") app.sessionStats.again++;
+    if (grade === "easy") app.sessionStats.easy++;
+
+    // Update global meta
+    meta = loadMeta();
+    meta.totalReviews = (meta.totalReviews || 0) + 1;
+    if (!meta.seenKeys) meta.seenKeys = {};
+    meta.seenKeys[deck.id + ":" + mode + ":" + item.cardIndex] = true;
+    saveMeta(meta);
+
+    if (!app.cram){
+      var state = loadDeckState(deck.id, mode);
+      var prev = state[item.cardIndex] || newCardState();
+      var next = schedule(prev, grade);
+      state[item.cardIndex] = next;
+      saveDeckState(deck.id, mode, state);
+    }
+
+    // Remove current item from queue
+    app.queue.splice(app.queuePos, 1);
+
+    if (grade === "again"){
+      // Re-queue within session: insert a few positions ahead (or at end if queue is short)
+      var reinsertAt = Math.min(app.queue.length, app.queuePos + 3);
+      app.queue.splice(reinsertAt, 0, { cardIndex: item.cardIndex, isNew: item.isNew });
+      // stay at same position to show next card
+    } else {
+      // queuePos now naturally points to the next card since we spliced current out
+    }
+
+    if (app.queuePos >= app.queue.length){
+      if (app.queue.length === 0){
+        renderDoneScreen();
+        showScreen("done");
+        return;
+      }
+      app.queuePos = 0;
+    }
+
+    renderCurrentCard();
+  }
+
+  document.querySelectorAll(".grade-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      gradeCard(btn.getAttribute("data-grade"));
+    });
+  });
+
+  // ======================================================================
+  // Done screen
+  // ======================================================================
+  function renderDoneScreen(){
+    document.getElementById("done-reviewed").textContent = app.sessionStats.reviewed;
+    document.getElementById("done-again").textContent = app.sessionStats.again;
+    document.getElementById("done-easy").textContent = app.sessionStats.easy;
+  }
+  document.getElementById("done-back-btn").addEventListener("click", function(){
+    renderHome();
+    showScreen("home");
+  });
+
+  // ======================================================================
+  // Settings modal
+  // ======================================================================
+  var settingsModal = document.getElementById("settings-modal");
+
+  function openSettings(){
+    document.getElementById("new-per-session").value = settings.newPerSession;
+    renderDeckResetList();
+    settingsModal.classList.remove("hidden");
+  }
+  function closeSettings(){
+    settingsModal.classList.add("hidden");
+  }
+
+  document.getElementById("settings-btn").addEventListener("click", openSettings);
+  document.getElementById("settings-close").addEventListener("click", closeSettings);
+  settingsModal.addEventListener("click", function(e){
+    if (e.target === settingsModal) closeSettings();
+  });
+
+  document.getElementById("new-per-session").addEventListener("change", function(e){
+    var v = parseInt(e.target.value, 10);
+    if (isNaN(v) || v < 1) v = 15;
+    if (v > 200) v = 200;
+    settings.newPerSession = v;
+    saveSettings(settings);
+    e.target.value = v;
+  });
+
+  function renderDeckResetList(){
+    var container = document.getElementById("deck-reset-list");
+    container.innerHTML = "";
+    DECKS.forEach(function(deck){
+      var row = document.createElement("div");
+      row.className = "deck-reset-row";
+      row.innerHTML = '<span>' + escapeHTML(deck.name) + '</span>';
+      var btn = document.createElement("button");
+      btn.className = "btn-danger";
+      btn.textContent = "Reset";
+      btn.addEventListener("click", function(){
+        if (confirm('Reset all progress for "' + deck.name + '"? This cannot be undone.')){
+          localStorage.removeItem(deckStateKey(deck.id, "ru-en"));
+          localStorage.removeItem(deckStateKey(deck.id, "en-ru"));
+          renderHome();
+        }
+      });
+      row.appendChild(btn);
+      container.appendChild(row);
+    });
+  }
+
+  // ======================================================================
+  // Keyboard shortcuts
+  // ======================================================================
+  document.addEventListener("keydown", function(e){
+    // Ignore when typing in an input field
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
+
+    if (e.key === "Escape"){
+      if (!settingsModal.classList.contains("hidden")){
+        closeSettings();
+        return;
+      }
+      if (app.screen === "study" || app.screen === "deck" || app.screen === "done"){
+        e.preventDefault();
+        renderHome();
+        showScreen("home");
+      }
+      return;
+    }
+
+    if (app.screen !== "study") return;
+
+    if (e.key === " " || e.code === "Space"){
+      e.preventDefault();
+      if (!app.revealed){
+        revealAnswer();
+      }
+      return;
+    }
+
+    if (app.revealed && ["1","2","3","4"].indexOf(e.key) !== -1){
+      e.preventDefault();
+      var map = { "1":"again", "2":"hard", "3":"good", "4":"easy" };
+      gradeCard(map[e.key]);
+    }
+  });
+
+  // ======================================================================
+  // Init
+  // ======================================================================
+  renderHome();
+  showScreen("home");
+
+})();
+</script>
+</body>
+</html>

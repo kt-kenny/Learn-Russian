@@ -1,0 +1,68 @@
+site_name: Learn Russian
+site_description: A grammar-first path to Russian A2
+site_url: ""
+use_directory_urls: false
+
+theme:
+  name: material
+  language: en
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - toc.integrate
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - tables
+  - attr_list
+
+nav:
+  - Home: index.md
+  - Roadmap: roadmap.md
+  - Alphabet & Pronunciation: alphabet.md
+  - Grammar:
+      - Overview: grammar/index.md
+      - 1. Gender & Nouns: grammar/01-gender-and-nouns.md
+      - 2. Accusative Case: grammar/02-accusative.md
+      - 3. Prepositional Case: grammar/03-prepositional.md
+      - 4. Genitive Case: grammar/04-genitive.md
+      - 5. Dative Case: grammar/05-dative.md
+      - 6. Instrumental Case: grammar/06-instrumental.md
+      - 7. Verbs — Present Tense: grammar/07-verbs-present.md
+      - 8. Verbs — Past & Future: grammar/08-verbs-past-future.md
+      - 9. Verbal Aspect: grammar/09-aspect.md
+      - 10. Adjectives & Possessives: grammar/10-adjectives-possessives.md
+      - 11. Pronouns: grammar/11-pronouns.md
+      - 12. Numbers & Time: grammar/12-numbers-time.md
+      - 13. Verbs of Motion (Intro): grammar/13-verbs-of-motion.md
+  - Phrases:
+      - Overview: phrases/index.md
+      - Survival Essentials: phrases/01-survival.md
+      - Greetings & Small Talk: phrases/02-greetings-smalltalk.md
+      - Food & Restaurants: phrases/03-food-restaurant.md
+      - Directions & Transport: phrases/04-directions-transport.md
+      - Shopping & Money: phrases/05-shopping-money.md
+      - Feelings & Opinions: phrases/06-feelings-opinions.md
+  - Practice:
+      - Overview: practice/index.md
+      - Case Drills: practice/case-drills.md
+      - Verb Drills: practice/verb-drills.md
+      - Translation Exercises: practice/translation-exercises.md
+  - Flashcards: flashcards/index.html
+  - Resources: resources.md
